@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public static class BuildHooks {
+public class BuildHooks {
 
     public static void PreBuild() {
     }
