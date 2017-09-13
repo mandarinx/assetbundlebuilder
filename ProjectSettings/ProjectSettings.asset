@@ -8,7 +8,7 @@ PlayerSettings:
   AndroidProfiler: 0
   defaultScreenOrientation: 4
   targetDevice: 2
-  useOnDemandResources: 0
+  useOnDemandResources: 1
   accelerometerFrequency: 60
   companyName: mandarin
   productName: AssetBundleBuilder
@@ -57,8 +57,8 @@ PlayerSettings:
   iosAppInBackgroundBehavior: 0
   displayResolutionDialog: 1
   iosAllowHTTPDownload: 1
-  allowedAutorotateToPortrait: 1
-  allowedAutorotateToPortraitUpsideDown: 1
+  allowedAutorotateToPortrait: 0
+  allowedAutorotateToPortraitUpsideDown: 0
   allowedAutorotateToLandscapeRight: 1
   allowedAutorotateToLandscapeLeft: 1
   useOSAutorotation: 1
@@ -203,7 +203,16 @@ PlayerSettings:
   iOSLaunchScreeniPadFillPct: 100
   iOSLaunchScreeniPadSize: 100
   iOSLaunchScreeniPadCustomXibPath: 
-  iOSDeviceRequirements: []
+  iOSDeviceRequirements:
+  - variantTagName: hd
+    variations:
+    - idiom: iphone
+      memory: 2GB
+    - idiom: ipad
+      memory: 2GB
+  - variantTagName: sd
+    variations:
+    - {}
   iOSURLSchemes: []
   iOSBackgroundModes: 0
   iOSMetalForceHardShadows: 0
