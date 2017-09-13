@@ -206,13 +206,11 @@ PlayerSettings:
   iOSDeviceRequirements:
   - variantTagName: hd
     variations:
-    - idiom: iphone
-      memory: 2GB
-    - idiom: ipad
+    - idiom: universal
       memory: 2GB
   - variantTagName: sd
     variations:
-    - {}
+    - idiom: universal
   iOSURLSchemes: []
   iOSBackgroundModes: 0
   iOSMetalForceHardShadows: 0
