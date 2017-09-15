@@ -18,7 +18,7 @@ public class BuildHooks {
     public static void UploadAssetBundles() {
         Debug.Log("BuildHooks.UploadAssetBundles");
         
-        string pathAssetBundles = Application.streamingAssetsPath + "/iOS/";
+        string pathAssetBundles = Application.streamingAssetsPath + "/";
         string pathManifest = pathAssetBundles + "iOS";
 
         Debug.Log("Upload asset bundles from "+pathAssetBundles);
