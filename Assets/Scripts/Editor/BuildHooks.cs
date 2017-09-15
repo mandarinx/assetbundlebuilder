@@ -18,30 +18,18 @@ public class BuildHooks {
     public static void UploadAssetBundles() {
         Debug.Log("BuildHooks.UploadAssetBundles");
         
-        string pathAssetBundles = Application.dataPath + "AssetBundles/iOS/";
+        string pathAssetBundles = Application.dataPath + "/AssetBundles/iOS/";
         string pathManifest = pathAssetBundles + "iOS";
 
         Debug.Log("Upload asset bundles from "+pathAssetBundles);
         Debug.Log("Load manifest from "+pathManifest);
 
         AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
+
         if (bundle == null) {
-            Debug.Log("Could not load manifest");
-        }
-
-        Debug.Log("Load manifest from /BUILD_PATH/AssetBundles/iOS/");
-
-        AssetBundle bundle2 = AssetBundle.LoadFromFile("/BUILD_PATH/AssetBundles/iOS/");
-
-        if (bundle2 == null) {
-            Debug.Log("Could not load manifest from /BUILD_PATH/AssetBundles/iOS/");
+            Debug.LogError("Could not load manifest");
             return;
         }
-
-//        if (bundle == null) {
-//            Debug.LogError("Could not load manifest");
-//            return;
-//        }
         
         Debug.Log("Loaded manifest bundle");
         
