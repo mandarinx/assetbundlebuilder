@@ -22,12 +22,24 @@ public class BuildHooks {
         string pathManifest = pathAssetBundles + "iOS";
 
         Debug.Log("Upload asset bundles from "+pathAssetBundles);
+        Debug.Log("Load manifest from "+pathManifest);
 
         AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
 
+        if (bundle == null) {
+            Debug.LogError("Could not load manifest");
+            return;
+        }
+        
         Debug.Log("Loaded manifest bundle");
         
         AssetBundleManifest manifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+
+        if (manifest == null) {
+            Debug.LogError("Could not find manifest in bundle");
+            return;
+        }
+        
         Debug.Log("Got manifest "+manifest.name);
         
         string[] bundles = manifest.GetAllAssetBundles();
