@@ -9,23 +9,30 @@ using System.Text;
 public class UploadAssetBundles : MonoBehaviour {
 
     public void Upload() {
+        Debug.Log("UploadAssetBundles starting upload");
         StartCoroutine(StartUpload());
     }
     
     IEnumerator StartUpload() {
         string pathAssetBundles = Application.dataPath.Replace("Assets", "") + "AssetBundles/iOS/";
         string pathManifest = pathAssetBundles + "iOS";
+
+        Debug.Log("Upload asset bundles from "+pathAssetBundles);
         
         var req = AssetBundle.LoadFromFileAsync(pathManifest);
         yield return req;
 
+        Debug.Log("Loaded manifest bundle");
+        
         AssetBundleManifest manifest = req.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+        Debug.Log("Got manifest "+manifest.name);
         
         string[] bundles = manifest.GetAllAssetBundles();
         string[] bundleFiles = new string[bundles.Length];
 
         for (int i = 0; i < bundles.Length; ++i) {
             bundleFiles[i] = pathAssetBundles + bundles[i];
+            Debug.Log("Add "+bundleFiles[i]+" to upload queue");
         }
 
         Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");

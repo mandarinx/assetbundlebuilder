@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEditor;
-using UnityEditor.SceneManagement;
+﻿using UnityEditor;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class BuildHooks {
 
@@ -14,28 +11,10 @@ public class BuildHooks {
 
     [MenuItem("Test/Upload Asset Bundles")]
     public static void UploadAssetBundles() {
-        GameObject go = new GameObject();
+        Debug.Log("BuildHooks.UploadAssetBundles");
+        GameObject go = new GameObject("UploadAssetBundles");
+        Debug.Log("Create GameObject "+go.name);
         go.AddComponent<UploadAssetBundles>();
-//    
-//        EditorSceneManager.sceneOpened += OnSceneOpened;
-//        EditorSceneManager.OpenScene("Assets/UploadAssetBundles.unity");
-    }
-
-    private static void OnSceneOpened(Scene scene, OpenSceneMode mode) {
-        Debug.Log("Opened scene: "+scene.name);
-        List<GameObject> gos = new List<GameObject>();
-        scene.GetRootGameObjects(gos);
-        bool found = false;
-        for (int i = 0; i < gos.Count; ++i) {
-            UploadAssetBundles upload = gos[i].GetComponent<UploadAssetBundles>();
-            if (upload != null) {
-                found = true;
-                upload.Upload();
-                return;
-            }
-        }
-        if (!found) {
-            Debug.LogError("Could not find UploadAssetBundles in any of the root objects");
-        }
+        Debug.Log("Added component UploadAssetBundles");
     }
 }
