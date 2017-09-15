@@ -10,21 +10,17 @@ public class UploadAssetBundles : MonoBehaviour {
 
     public void Upload() {
         Debug.Log("UploadAssetBundles starting upload");
-        StartCoroutine(StartUpload());
-    }
-    
-    IEnumerator StartUpload() {
+
         string pathAssetBundles = Application.dataPath.Replace("Assets", "") + "AssetBundles/iOS/";
         string pathManifest = pathAssetBundles + "iOS";
 
         Debug.Log("Upload asset bundles from "+pathAssetBundles);
-        
-        var req = AssetBundle.LoadFromFileAsync(pathManifest);
-        yield return req;
+
+        AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
 
         Debug.Log("Loaded manifest bundle");
         
-        AssetBundleManifest manifest = req.assetBundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+        AssetBundleManifest manifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
         Debug.Log("Got manifest "+manifest.name);
         
         string[] bundles = manifest.GetAllAssetBundles();
