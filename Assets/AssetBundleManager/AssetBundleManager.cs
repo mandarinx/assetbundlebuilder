@@ -6,6 +6,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+#if UNITY_IOS
+using UnityEngine.iOS;
+#endif
+
 /*  The AssetBundle Manager provides a High-Level API for working with AssetBundles. 
     The AssetBundle Manager will take care of loading AssetBundles and their associated 
     Asset Dependencies.
@@ -29,6 +33,19 @@ using System.Collections.Generic;
 
 namespace AssetBundles
 {
+
+    public static class Config {
+        public static bool enabledOnDemandResources {
+            get {
+                #if UNITY_IOS
+                return UnityEngine.iOS.OnDemandResources.enabled;
+                #else
+                return false;
+                #endif
+            }
+        }
+    }
+
     /// <summary>
     /// Loaded assetBundle contains the references count which can be used to
     /// unload dependent assetBundles automatically.
@@ -302,6 +319,7 @@ namespace AssetBundles
             return operation;
         }
 
+
         // Temporarily work around a il2cpp bug
         static protected void LoadAssetBundle(string assetBundleName)
         {
@@ -363,12 +381,12 @@ namespace AssetBundles
         // code is responsible for correctly loading the bundle.
         static protected bool UsesExternalBundleVariantResolutionMechanism(string baseAssetBundleName)
         {
-#if ENABLE_IOS_APP_SLICING
-            var url = GetAssetBundleBaseDownloadingURL(baseAssetBundleName);
-            if (url.ToLower().StartsWith("res://") ||
-                url.ToLower().StartsWith("odr://"))
-                return true;
-#endif
+            if (Config.enabledOnDemandResources) {
+                var url = GetAssetBundleBaseDownloadingURL(baseAssetBundleName);
+                if (url.ToLower().StartsWith("res://") ||
+                    url.ToLower().StartsWith("odr://"))
+                    return true;
+            }
             return false;
         }
 
@@ -436,8 +454,10 @@ namespace AssetBundles
             }
 
             // @TODO: Do we need to consider the referenced count of WWWs?
-            // In the demo, we never have duplicate WWWs as we wait LoadAssetAsync()/LoadLevelAsync() to be finished before calling another LoadAssetAsync()/LoadLevelAsync().
-            // But in the real case, users can call LoadAssetAsync()/LoadLevelAsync() several times then wait them to be finished which might have duplicate WWWs.
+            // In the demo, we never have duplicate WWWs as we wait LoadAssetAsync()/LoadLevelAsync() to be finished 
+            // before calling another LoadAssetAsync()/LoadLevelAsync().
+            // But in the real case, users can call LoadAssetAsync()/LoadLevelAsync() several times then wait them to 
+            // be finished which might have duplicate WWWs.
             if (m_DownloadingBundles.Contains(assetBundleName))
                 return true;
 
@@ -445,21 +465,25 @@ namespace AssetBundles
 
             if (bundleBaseDownloadingURL.ToLower().StartsWith("odr://"))
             {
-#if ENABLE_IOS_ON_DEMAND_RESOURCES
-                Log(LogType.Info, "Requesting bundle " + assetBundleName + " through ODR");
-                m_InProgressOperations.Add(new AssetBundleDownloadFromODROperation(assetBundleName));
-#else
-                new ApplicationException("Can't load bundle " + assetBundleName + " through ODR: this Unity version or build target doesn't support it.");
-#endif
+                if (Config.enabledOnDemandResources) {
+                    Log(LogType.Info, "Requesting bundle " + assetBundleName + " through ODR");
+                    m_InProgressOperations.Add(new AssetBundleDownloadFromODROperation(assetBundleName));
+                } else {
+                    new ApplicationException(
+                        "Can't load bundle " + assetBundleName +
+                        " through ODR: this Unity version or build target doesn't support it.");
+                }
             }
             else if (bundleBaseDownloadingURL.ToLower().StartsWith("res://"))
             {
-#if ENABLE_IOS_APP_SLICING
-                Log(LogType.Info, "Requesting bundle " + assetBundleName + " through asset catalog");
-                m_InProgressOperations.Add(new AssetBundleOpenFromAssetCatalogOperation(assetBundleName));
-#else
-                new ApplicationException("Can't load bundle " + assetBundleName + " through asset catalog: this Unity version or build target doesn't support it.");
-#endif
+                if (Config.enabledOnDemandResources) {
+                    Log(LogType.Info, "Requesting bundle " + assetBundleName + " through asset catalog");
+                    m_InProgressOperations.Add(new AssetBundleOpenFromAssetCatalogOperation(assetBundleName));
+                } else {
+                    new ApplicationException(
+                        "Can't load bundle " + assetBundleName +
+                        " through asset catalog: this Unity version or build target doesn't support it.");
+                }
             }
             else
             {

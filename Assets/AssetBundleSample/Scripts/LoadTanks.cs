@@ -33,7 +33,6 @@ public class LoadTanks : MonoBehaviour
             GUILayout.BeginVertical();
 
             // GUI Buttons
-            // New Line - Get HD/SD
             GUILayout.BeginHorizontal();
             // Display the choice
             GUILayout.Toggle(sd, "");
@@ -115,15 +114,23 @@ public class LoadTanks : MonoBehaviour
     // eg. Development server / iOS ODR / web URL
     void InitializeSourceURL()
     {
+        #if UNITY_EDITOR
+        // Use the following code if AssetBundles are embedded in the project for example via StreamingAssets folder etc:
+        AssetBundleManager.SetSourceAssetBundleURL(Application.dataPath.Replace("Assets", "") + "AssetBundles/");
+        // Or customize the URL based on your deployment or configuration
+        //AssetBundleManager.SetSourceAssetBundleURL("http://www.MyWebsite/MyAssetBundles");
+        return;
+        #endif
+
         // If ODR is available and enabled, then use it and let Xcode handle download requests.
-        #if ENABLE_IOS_ON_DEMAND_RESOURCES
+        #if UNITY_IOS
         if (UnityEngine.iOS.OnDemandResources.enabled)
         {
             AssetBundleManager.SetSourceAssetBundleURL("odr://");
             return;
         }
         #endif
-        #if DEVELOPMENT_BUILD || UNITY_EDITOR
+        #if DEVELOPMENT_BUILD
         // With this code, when in-editor or using a development builds: Always use the AssetBundle Server
         // (This is very dependent on the production workflow of the project.
         //      Another approach would be to make this configurable in the standalone player.)
@@ -131,7 +138,7 @@ public class LoadTanks : MonoBehaviour
         return;
         #else
         // Use the following code if AssetBundles are embedded in the project for example via StreamingAssets folder etc:
-        AssetBundleManager.SetSourceAssetBundleURL(Application.dataPath + "/");
+        AssetBundleManager.SetSourceAssetBundleURL(Application.dataPath.Replace("Assets", "") + "AssetBundles/");
         // Or customize the URL based on your deployment or configuration
         //AssetBundleManager.SetSourceAssetBundleURL("http://www.MyWebsite/MyAssetBundles");
         return;

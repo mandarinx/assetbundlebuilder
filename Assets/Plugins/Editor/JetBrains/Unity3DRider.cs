@@ -391,6 +391,7 @@ namespace Plugins.Editor.JetBrains
 
     static RiderPlugin()
     {
+      // Fails on Unity Cloud Build
       var riderPath = GetDefaultApp();
       if (!RiderPathExist(riderPath)) 
         return;
