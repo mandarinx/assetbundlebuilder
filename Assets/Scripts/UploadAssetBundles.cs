@@ -28,6 +28,7 @@ public class UploadAssetBundles : MonoBehaviour {
             bundleFiles[i] = pathAssetBundles + bundles[i];
         }
 
+        Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
         string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
         Debug.Log(response);
 
@@ -78,7 +79,7 @@ public class UploadAssetBundles : MonoBehaviour {
         // Each file is indexed using its array position.
         for (int i = 0; i < files.Length; i++) {
             
-            Debug.Log("Upload file: "+files[i]);
+            Debug.Log("File: "+files[i]);
             
             memStream.Write(boundaryBytes, 0, boundaryBytes.Length);
             string headerStr = string.Format(headerTemplate, "file"+i.ToString("000"), files[i]);
