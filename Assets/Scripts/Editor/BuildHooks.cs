@@ -19,40 +19,49 @@ public class BuildHooks {
         Debug.Log("BuildHooks.UploadAssetBundles");
         
         string pathAssetBundles = Application.streamingAssetsPath + "/";
-        string pathManifest = pathAssetBundles + "iOS";
 
-        Debug.Log("Upload asset bundles from "+pathAssetBundles);
-        Debug.Log("Load manifest from "+pathManifest);
+        string[] files = Directory.GetFiles(pathAssetBundles);
 
-        AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
-
-        if (bundle == null) {
-            Debug.LogError("Could not load manifest");
-            return;
+        string output = "Files in "+pathAssetBundles+": \n";
+        foreach (string file in files) {
+            output += file + "\n";
         }
-        
-        Debug.Log("Loaded manifest bundle");
-        
-        AssetBundleManifest manifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+        Debug.Log(output);
 
-        if (manifest == null) {
-            Debug.LogError("Could not find manifest in bundle");
-            return;
-        }
-        
-        Debug.Log("Got manifest "+manifest.name);
-        
-        string[] bundles = manifest.GetAllAssetBundles();
-        string[] bundleFiles = new string[bundles.Length];
-
-        for (int i = 0; i < bundles.Length; ++i) {
-            bundleFiles[i] = pathAssetBundles + bundles[i];
-            Debug.Log("Add "+bundleFiles[i]+" to upload queue");
-        }
-
-        Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
-        string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
-        Debug.Log("Response: " + response);
+//        string pathManifest = pathAssetBundles + "iOS";
+//
+//        Debug.Log("Upload asset bundles from "+pathAssetBundles);
+//        Debug.Log("Load manifest from "+pathManifest);
+//
+//        AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
+//
+//        if (bundle == null) {
+//            Debug.LogError("Could not load manifest");
+//            return;
+//        }
+//        
+//        Debug.Log("Loaded manifest bundle");
+//        
+//        AssetBundleManifest manifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
+//
+//        if (manifest == null) {
+//            Debug.LogError("Could not find manifest in bundle");
+//            return;
+//        }
+//        
+//        Debug.Log("Got manifest "+manifest.name);
+//        
+//        string[] bundles = manifest.GetAllAssetBundles();
+//        string[] bundleFiles = new string[bundles.Length];
+//
+//        for (int i = 0; i < bundles.Length; ++i) {
+//            bundleFiles[i] = pathAssetBundles + bundles[i];
+//            Debug.Log("Add "+bundleFiles[i]+" to upload queue");
+//        }
+//
+//        Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
+//        string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
+//        Debug.Log("Response: " + response);
     }
     
     ///<summary>Uploads form fields, and n files to REST endpoint</summary>
