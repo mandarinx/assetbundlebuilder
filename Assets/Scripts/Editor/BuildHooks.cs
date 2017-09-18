@@ -69,45 +69,6 @@ namespace UnityEngine.CloudBuild {
 
 public class BuildHooks {
     public static void PreBuild() {
-        Debug.Log("BuildHooks.PreBuild");
-        
-        var manifest = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
-        Debug.Log("[PreBuild] Load manifest from json");
-        if (manifest != null)
-        {
-            Debug.Log("Got manifest from json");
-        
-            var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
-
-            if (manifestDict == null) {
-                Debug.Log("Could not deserialize manifest json");
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Manifest contents:");
-                foreach (var kvp in manifestDict)
-                {
-                    // Be sure to check for null values!
-                    var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
-                    sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
-                }
-                Debug.Log(sb.ToString());
-            }
-        }
-
-        
-//        string[] strLocalBundles = manifest.GetValue<string[]>("assetBundles.localBundles");
-//        if (strLocalBundles == null) {
-//            Debug.Log("strLocalBundles == nul");
-//        } else {
-//            Debug.Log("strLocalbundles.length = "+strLocalBundles.Length);
-//        }
-//        AssetBundle[] abLocalBundles = manifest.GetValue<AssetBundle[]>("assetBundles.localBundles");
-//        if (abLocalBundles == null) {
-//            Debug.Log("abLocalBundles == nul");
-//        } else {
-//            Debug.Log("abLocalbundles.length = "+abLocalBundles.Length);
-//        }
-        
     }
 
     public static void PostBuild(string builtProjectPath) {
@@ -115,66 +76,59 @@ public class BuildHooks {
 
         var manifest = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
         Debug.Log("[PostBuild] Load manifest from json");
-        if (manifest != null)
-        {
-            Debug.Log("Got manifest from json");
-        
-            var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
+        if (manifest == null) {
+            Debug.LogWarning("Couldn't get manifest from json");
+            return;
+        }
 
-            if (manifestDict == null) {
-                Debug.Log("Could not deserialize manifest json");
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.AppendLine("Manifest contents:");
-                foreach (var kvp in manifestDict)
-                {
-                    // Be sure to check for null values!
-                    var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
-                    sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
-                }
-                Debug.Log(sb.ToString());
-            }
+        Debug.Log("Got manifest from json");
+        
+        var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
+
+        if (manifestDict == null) {
+            Debug.Log("Could not deserialize manifest json");
+            return;
         }
         
-//        UploadAssetBundles();
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("Manifest contents:");
+        foreach (var kvp in manifestDict) {
+            var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
+            sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
+        }
+        Debug.Log(sb.ToString());
+
+        string bundlesPath = manifestDict["assetBundles.localBundlesRelativePath"] as string;
+        AssetBundle[] bundles = manifestDict["assetBundles.localBundles"] as AssetBundle[];
+        
+        UploadAssetBundles(bundles, bundlesPath);
     }
 
     [MenuItem("Test/Upload Asset Bundles")]
-    public static void UploadAssetBundles(BuildManifestObject manifest) {
-        Debug.Log("BuildHooks.UploadAssetBundles");
-        
-//        TextAsset manifest = (TextAsset)Resources.Load("UnityCloudBuildManifest.json");
-        Debug.Log("Got Cloud Build manifest from prebuild hook? "+(manifest != null ? "yes" : "no"));
-        
-//        if (manifest != null) {
-////            CBManifest data = JsonUtility.FromJson<CBManifest>(manifest.text);
-////            Debug.Log("Deserialized manifest is OK");
-//
-//            if (manifest.assetBundles == null) {
-//                Debug.Log("manifest.assetBundles == null");
-//            } else {
-//                if (manifest.assetBundles.localBundles == null) {
-//                    Debug.Log("manifest.assetBundles.localBundles == null");
-//                } else {
-//                    Debug.Log("Manifest localBundles.Length: " + manifest.assetBundles.localBundles.Length);
-//                    for (int i = 0; i < manifest.assetBundles.localBundles.Length; ++i) {
-//                        Debug.Log("    ["+i+"] "+manifest.assetBundles.localBundles[i]);
-//                    }
-//                }
-//                
-//                Debug.Log("data.assetBundles.localBundlesRelativePath: "+data.assetBundles.localBundlesRelativePath);
-//            }
-//        }
-//        
+    public static void UploadAssetBundles(AssetBundle[] bundles, string path) {
+        Debug.Log("BuildHooks.UploadAssetBundles from "+path);
+
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("AssetBundles:");
+            foreach (AssetBundle bundle in bundles) {
+                sb.AppendLine(bundle.name);
+            }
+            Debug.Log(sb.ToString());
+        }
+
 //        string pathAssetBundles = Application.streamingAssetsPath + "/";
 //
-//        string[] files = Directory.GetFiles(pathAssetBundles);
+        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + path);
 //
-//        string output = "Files in "+pathAssetBundles+": \n";
-//        foreach (string file in files) {
-//            output += file + "\n";
-//        }
-//        Debug.Log(output);
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("Files in " + path + ":");
+            foreach (string file in files) {
+                sb.AppendLine(file);
+            }
+            Debug.Log(sb.ToString());
+        }
 
 //        string pathManifest = pathAssetBundles + "iOS";
 //
