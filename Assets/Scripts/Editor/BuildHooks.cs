@@ -6,6 +6,21 @@ using System.IO;
 using System.Net;
 using System.Text;
 
+[Serializable]
+public class CBManifest {
+    public string scmCommitId;
+    public string scmBranch;
+    public string buildNumber;
+    public string buildStartTime;
+    public string projectId;
+    public string bundleId;
+    public string unityVersion;
+    public string xcodeVersion;
+    public string cloudBuildTargetName;
+    public string[] localBundles;
+    public string localBundlesRelativePath;
+}
+
 public class BuildHooks {
 
     public static void PreBuild() {
@@ -17,6 +32,25 @@ public class BuildHooks {
     [MenuItem("Test/Upload Asset Bundles")]
     public static void UploadAssetBundles() {
         Debug.Log("BuildHooks.UploadAssetBundles");
+        
+        TextAsset manifest = (TextAsset)Resources.Load("UnityCloudBuildManifest.json");
+        Debug.Log("Loaded Cloud Build manifest json from Resources? "+(manifest != null ? "yes" : "no"));
+        
+        if (manifest != null) {
+            CBManifest data = JsonUtility.FromJson<CBManifest>(manifest.text);
+            Debug.Log("Deserialized manifest is OK");
+
+            if (data.localBundles == null) {
+                Debug.Log("data.localBundles == null");
+            } else {
+                Debug.Log("Manifest localBundles.Length: " + data.localBundles.Length);
+                for (int i = 0; i < data.localBundles.Length; ++i) {
+                    Debug.Log("    ["+i+"] "+data.localBundles[i]);
+                }
+            }
+
+            Debug.Log("data.localBundlesRelativePath: "+data.localBundlesRelativePath);
+        }
         
         string pathAssetBundles = Application.streamingAssetsPath + "/";
 
