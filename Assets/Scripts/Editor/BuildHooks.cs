@@ -111,7 +111,7 @@ public class BuildHooks {
             sb.AppendLine("AssetBundles:");
             foreach (System.Object obj in bundles) {
                 AssetBundle bundle = obj as AssetBundle;
-                sb.AppendLine(bundle == null ? "not AssetBundle" : bundle.name);
+                sb.AppendLine(bundle == null ? obj.GetType().ToString() : bundle.name);
             }
             Debug.Log(sb.ToString());
         }
