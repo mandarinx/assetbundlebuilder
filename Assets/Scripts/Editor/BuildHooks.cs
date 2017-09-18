@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Text;
 using UnityEngine.CloudBuild;
+using MiniJSON;
 
 #if (!UNITY_CLOUD_BUILD)
 namespace UnityEngine.CloudBuild {
@@ -68,29 +69,79 @@ namespace UnityEngine.CloudBuild {
 //}
 
 public class BuildHooks {
-    private static BuildManifestObject manifest;
-    
-    public static void PreBuild(BuildManifestObject manifest) {
-        BuildHooks.manifest = manifest;
-        string[] strLocalBundles = manifest.GetValue<string[]>("assetBundles.localBundles");
-        if (strLocalBundles == null) {
-            Debug.Log("strLocalBundles == nul");
-        } else {
-            Debug.Log("strLocalbundles.length = "+strLocalBundles.Length);
+    public static void PreBuild() {
+        Debug.Log("BuildHooks.PreBuild");
+        
+        var manifest = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
+        Debug.Log("[PreBuild] Load manifest from json");
+        if (manifest != null)
+        {
+            Debug.Log("Got manifest from json");
+        
+            var manifestDict = Json.Deserialize(manifest.text) as Dictionary<string,object>;
+
+            if (manifestDict == null) {
+                Debug.Log("Could not deserialize manifest json");
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Manifest contents:");
+                foreach (var kvp in manifestDict)
+                {
+                    // Be sure to check for null values!
+                    var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
+                    sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
+                }
+                Debug.Log(sb.ToString());
+            }
         }
-        AssetBundle[] abLocalBundles = manifest.GetValue<AssetBundle[]>("assetBundles.localBundles");
-        if (abLocalBundles == null) {
-            Debug.Log("abLocalBundles == nul");
-        } else {
-            Debug.Log("abLocalbundles.length = "+abLocalBundles.Length);
-        }
+
+        
+//        string[] strLocalBundles = manifest.GetValue<string[]>("assetBundles.localBundles");
+//        if (strLocalBundles == null) {
+//            Debug.Log("strLocalBundles == nul");
+//        } else {
+//            Debug.Log("strLocalbundles.length = "+strLocalBundles.Length);
+//        }
+//        AssetBundle[] abLocalBundles = manifest.GetValue<AssetBundle[]>("assetBundles.localBundles");
+//        if (abLocalBundles == null) {
+//            Debug.Log("abLocalBundles == nul");
+//        } else {
+//            Debug.Log("abLocalbundles.length = "+abLocalBundles.Length);
+//        }
+        
     }
 
-    public static void PostBuild() {
+    public static void PostBuild(string builtProjectPath) {
+        Debug.Log("BuildHooks.PostBuild builtProjectPath: "+builtProjectPath);
+
+        var manifest = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
+        Debug.Log("[PostBuild] Load manifest from json");
+        if (manifest != null)
+        {
+            Debug.Log("Got manifest from json");
+        
+            var manifestDict = Json.Deserialize(manifest.text) as Dictionary<string,object>;
+
+            if (manifestDict == null) {
+                Debug.Log("Could not deserialize manifest json");
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine("Manifest contents:");
+                foreach (var kvp in manifestDict)
+                {
+                    // Be sure to check for null values!
+                    var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
+                    sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
+                }
+                Debug.Log(sb.ToString());
+            }
+        }
+        
+//        UploadAssetBundles();
     }
 
     [MenuItem("Test/Upload Asset Bundles")]
-    public static void UploadAssetBundles() {
+    public static void UploadAssetBundles(BuildManifestObject manifest) {
         Debug.Log("BuildHooks.UploadAssetBundles");
         
 //        TextAsset manifest = (TextAsset)Resources.Load("UnityCloudBuildManifest.json");
