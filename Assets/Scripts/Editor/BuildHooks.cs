@@ -110,8 +110,7 @@ public class BuildHooks {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("AssetBundles:");
             foreach (System.Object obj in bundles) {
-                AssetBundle bundle = obj as AssetBundle;
-                sb.AppendLine(bundle == null ? obj.GetType().ToString() : bundle.name);
+                sb.AppendLine(obj as string);
             }
             Debug.Log(sb.ToString());
         }
