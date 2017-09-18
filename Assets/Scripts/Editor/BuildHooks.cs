@@ -105,28 +105,31 @@ public class BuildHooks {
 
     public static void UploadAssetBundles(List<System.Object> bundles, string path) {
         Debug.Log("BuildHooks.UploadAssetBundles from "+path);
-
+        
+        string[] bundleFiles = new string[bundles.Count];
+        string fullPath = Directory.GetCurrentDirectory() + "/" + path + "/";
+        
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("AssetBundles:");
-            foreach (System.Object obj in bundles) {
-                sb.AppendLine(obj as string);
+            for (int i = 0; i < bundles.Count; ++i) {
+                sb.AppendLine(bundles[i] as string);
+                bundleFiles[i] = fullPath + bundles[i];
             }
             Debug.Log(sb.ToString());
         }
 
 //        string pathAssetBundles = Application.streamingAssetsPath + "/";
 //
-        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + path);
-//
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("Files in " + path + ":");
-            foreach (string file in files) {
-                sb.AppendLine(file);
-            }
-            Debug.Log(sb.ToString());
-        }
+//        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + path);
+//        {
+//            StringBuilder sb = new StringBuilder();
+//            sb.AppendLine("Files in " + path + ":");
+//            foreach (string file in files) {
+//                sb.AppendLine(file);
+//            }
+//            Debug.Log(sb.ToString());
+//        }
 
 //        string pathManifest = pathAssetBundles + "iOS";
 //
@@ -159,9 +162,9 @@ public class BuildHooks {
 //            Debug.Log("Add "+bundleFiles[i]+" to upload queue");
 //        }
 //
-//        Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
-//        string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
-//        Debug.Log("Response: " + response);
+        Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
+        string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
+        Debug.Log("Response: " + response);
     }
     
     ///<summary>Uploads form fields, and n files to REST endpoint</summary>
