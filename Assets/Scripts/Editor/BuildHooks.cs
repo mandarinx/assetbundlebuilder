@@ -1,34 +1,89 @@
 ﻿using UnityEditor;
 using UnityEngine;
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using UnityEngine.CloudBuild;
 
-[Serializable]
-public class CBManifestBundles {
-    public string[] localBundles;
-    public string localBundlesRelativePath;
-}
+#if (!UNITY_CLOUD_BUILD)
+namespace UnityEngine.CloudBuild {
+    public class BuildManifestObject : ScriptableObject {
 
-[Serializable]
-public class CBManifest {
-    public string scmCommitId;
-    public string scmBranch;
-    public string buildNumber;
-    public string buildStartTime;
-    public string projectId;
-    public string bundleId;
-    public string unityVersion;
-    public string xcodeVersion;
-    public string cloudBuildTargetName;
-    public CBManifestBundles assetBundles;
+        // Tries to get a manifest value - returns true if key was found and
+        // could be cast to type T, false otherwise.
+        public bool TryGetValue<T>(string key, out T result) {
+            result = default(T);
+            return true;
+        }
+
+        // Retrieve a manifest value or throw an exception if the given key
+        // isn't found.
+        public T GetValue<T>(string key) { return default(T); }
+
+        // Sets the value for a given key.
+        public void SetValue(string key, object value) {}
+
+        // Copy values from a dictionary. ToString() will be called on
+        // dictionary values before being stored.
+        public void SetValues(Dictionary<string, object> sourceDict) {}
+
+        // Remove all key/value pairs
+        public void ClearValues() {}
+
+        // Returns a Dictionary that represents the current BuildManifestObject
+        public Dictionary<string, object> ToDictionary() { return null; }
+
+        // Returns a JSON formatted string that represents the current
+        // BuildManifestObject
+        public string ToJson() { return ""; }
+
+        // Returns an INI formatted string that represents the current
+        // BuildManifestObject
+        public override string ToString() { return ""; }
+    }
 }
+#endif
+
+//[Serializable]
+//public class CBManifestBundles {
+//    public string[] localBundles;
+//    public string localBundlesRelativePath;
+//}
+//
+//[Serializable]
+//public class CBManifest {
+//    public string scmCommitId;
+//    public string scmBranch;
+//    public string buildNumber;
+//    public string buildStartTime;
+//    public string projectId;
+//    public string bundleId;
+//    public string unityVersion;
+//    public string xcodeVersion;
+//    public string cloudBuildTargetName;
+//    public CBManifestBundles assetBundles;
+//}
 
 public class BuildHooks {
-
-    public static void PreBuild() {
+    private static BuildManifestObject manifest;
+    
+    public static void PreBuild(BuildManifestObject manifest) {
+        BuildHooks.manifest = manifest;
+        string[] strLocalBundles = manifest.GetValue<string[]>("assetBundles.localBundles");
+        if (strLocalBundles == null) {
+            Debug.Log("strLocalBundles == nul");
+        } else {
+            Debug.Log("strLocalbundles.length = "+strLocalBundles.Length);
+        }
+        AssetBundle[] abLocalBundles = manifest.GetValue<AssetBundle[]>("assetBundles.localBundles");
+        if (abLocalBundles == null) {
+            Debug.Log("abLocalBundles == nul");
+        } else {
+            Debug.Log("abLocalbundles.length = "+abLocalBundles.Length);
+        }
     }
 
     public static void PostBuild() {
@@ -38,38 +93,38 @@ public class BuildHooks {
     public static void UploadAssetBundles() {
         Debug.Log("BuildHooks.UploadAssetBundles");
         
-        TextAsset manifest = (TextAsset)Resources.Load("UnityCloudBuildManifest.json");
-        Debug.Log("Loaded Cloud Build manifest json from Resources? "+(manifest != null ? "yes" : "no"));
+//        TextAsset manifest = (TextAsset)Resources.Load("UnityCloudBuildManifest.json");
+        Debug.Log("Got Cloud Build manifest from prebuild hook? "+(manifest != null ? "yes" : "no"));
         
-        if (manifest != null) {
-            CBManifest data = JsonUtility.FromJson<CBManifest>(manifest.text);
-            Debug.Log("Deserialized manifest is OK");
-
-            if (data.assetBundles == null) {
-                Debug.Log("data.assetBundles == null");
-            } else {
-                if (data.assetBundles.localBundles == null) {
-                    Debug.Log("data.assetBundles.localBundles == null");
-                } else {
-                    Debug.Log("Manifest localBundles.Length: " + data.assetBundles.localBundles.Length);
-                    for (int i = 0; i < data.assetBundles.localBundles.Length; ++i) {
-                        Debug.Log("    ["+i+"] "+data.assetBundles.localBundles[i]);
-                    }
-                }
-                
-                Debug.Log("data.assetBundles.localBundlesRelativePath: "+data.assetBundles.localBundlesRelativePath);
-            }
-        }
-        
-        string pathAssetBundles = Application.streamingAssetsPath + "/";
-
-        string[] files = Directory.GetFiles(pathAssetBundles);
-
-        string output = "Files in "+pathAssetBundles+": \n";
-        foreach (string file in files) {
-            output += file + "\n";
-        }
-        Debug.Log(output);
+//        if (manifest != null) {
+////            CBManifest data = JsonUtility.FromJson<CBManifest>(manifest.text);
+////            Debug.Log("Deserialized manifest is OK");
+//
+//            if (manifest.assetBundles == null) {
+//                Debug.Log("manifest.assetBundles == null");
+//            } else {
+//                if (manifest.assetBundles.localBundles == null) {
+//                    Debug.Log("manifest.assetBundles.localBundles == null");
+//                } else {
+//                    Debug.Log("Manifest localBundles.Length: " + manifest.assetBundles.localBundles.Length);
+//                    for (int i = 0; i < manifest.assetBundles.localBundles.Length; ++i) {
+//                        Debug.Log("    ["+i+"] "+manifest.assetBundles.localBundles[i]);
+//                    }
+//                }
+//                
+//                Debug.Log("data.assetBundles.localBundlesRelativePath: "+data.assetBundles.localBundlesRelativePath);
+//            }
+//        }
+//        
+//        string pathAssetBundles = Application.streamingAssetsPath + "/";
+//
+//        string[] files = Directory.GetFiles(pathAssetBundles);
+//
+//        string output = "Files in "+pathAssetBundles+": \n";
+//        foreach (string file in files) {
+//            output += file + "\n";
+//        }
+//        Debug.Log(output);
 
 //        string pathManifest = pathAssetBundles + "iOS";
 //
