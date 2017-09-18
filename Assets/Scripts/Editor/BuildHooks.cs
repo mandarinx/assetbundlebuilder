@@ -52,11 +52,10 @@ public class BuildHooks {
         
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("AssetBundles:");
-        int len = bundles.Count / 2;
-        for (int i = 0; i < len; i+=2) {
+        for (int i = 0; i < bundles.Count; ++i) {
             sb.AppendLine(bundles[i] as string);
-            bundleFiles[i] = fullPath + bundles[i];
-            bundleFiles[i+1] = fullPath + bundles[i] + ".manifest";
+            bundleFiles[i*2] = fullPath + bundles[i];
+            bundleFiles[(i*2)+1] = fullPath + bundles[i] + ".manifest";
         }
         Debug.Log(sb.ToString());
 
