@@ -99,20 +99,19 @@ public class BuildHooks {
         Debug.Log(sb.ToString());
 
         string bundlesPath = manifestDict["assetBundles.localBundlesRelativePath"] as string;
-        AssetBundle[] bundles = manifestDict["assetBundles.localBundles"] as AssetBundle[];
-        
+        List<System.Object> bundles = manifestDict["assetBundles.localBundles"] as List<System.Object>;
         UploadAssetBundles(bundles, bundlesPath);
     }
 
-    [MenuItem("Test/Upload Asset Bundles")]
-    public static void UploadAssetBundles(AssetBundle[] bundles, string path) {
+    public static void UploadAssetBundles(List<System.Object> bundles, string path) {
         Debug.Log("BuildHooks.UploadAssetBundles from "+path);
 
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("AssetBundles:");
-            foreach (AssetBundle bundle in bundles) {
-                sb.AppendLine(bundle.name);
+            foreach (System.Object obj in bundles) {
+                AssetBundle bundle = obj as AssetBundle;
+                sb.AppendLine(bundle == null ? "not AssetBundle" : bundle.name);
             }
             Debug.Log(sb.ToString());
         }
