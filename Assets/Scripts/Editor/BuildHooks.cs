@@ -1,73 +1,13 @@
-﻿using UnityEditor;
-using UnityEngine;
+﻿using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
-using UnityEngine.CloudBuild;
-
-#if (!UNITY_CLOUD_BUILD)
-namespace UnityEngine.CloudBuild {
-    public class BuildManifestObject : ScriptableObject {
-
-        // Tries to get a manifest value - returns true if key was found and
-        // could be cast to type T, false otherwise.
-        public bool TryGetValue<T>(string key, out T result) {
-            result = default(T);
-            return true;
-        }
-
-        // Retrieve a manifest value or throw an exception if the given key
-        // isn't found.
-        public T GetValue<T>(string key) { return default(T); }
-
-        // Sets the value for a given key.
-        public void SetValue(string key, object value) {}
-
-        // Copy values from a dictionary. ToString() will be called on
-        // dictionary values before being stored.
-        public void SetValues(Dictionary<string, object> sourceDict) {}
-
-        // Remove all key/value pairs
-        public void ClearValues() {}
-
-        // Returns a Dictionary that represents the current BuildManifestObject
-        public Dictionary<string, object> ToDictionary() { return null; }
-
-        // Returns a JSON formatted string that represents the current
-        // BuildManifestObject
-        public string ToJson() { return ""; }
-
-        // Returns an INI formatted string that represents the current
-        // BuildManifestObject
-        public override string ToString() { return ""; }
-    }
-}
-#endif
-
-//[Serializable]
-//public class CBManifestBundles {
-//    public string[] localBundles;
-//    public string localBundlesRelativePath;
-//}
-//
-//[Serializable]
-//public class CBManifest {
-//    public string scmCommitId;
-//    public string scmBranch;
-//    public string buildNumber;
-//    public string buildStartTime;
-//    public string projectId;
-//    public string bundleId;
-//    public string unityVersion;
-//    public string xcodeVersion;
-//    public string cloudBuildTargetName;
-//    public CBManifestBundles assetBundles;
-//}
 
 public class BuildHooks {
+
     public static void PreBuild() {
     }
 
@@ -99,69 +39,27 @@ public class BuildHooks {
         Debug.Log(sb.ToString());
 
         string bundlesPath = manifestDict["assetBundles.localBundlesRelativePath"] as string;
-        List<System.Object> bundles = manifestDict["assetBundles.localBundles"] as List<System.Object>;
+        List<object> bundles = manifestDict["assetBundles.localBundles"] as List<object>;
+
         UploadAssetBundles(bundles, bundlesPath);
     }
 
-    public static void UploadAssetBundles(List<System.Object> bundles, string path) {
+    public static void UploadAssetBundles(List<object> bundles, string path) {
         Debug.Log("BuildHooks.UploadAssetBundles from "+path);
         
-        string[] bundleFiles = new string[bundles.Count];
+        string[] bundleFiles = new string[bundles.Count * 2];
         string fullPath = Directory.GetCurrentDirectory() + "/" + path + "/";
         
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine("AssetBundles:");
-            for (int i = 0; i < bundles.Count; ++i) {
-                sb.AppendLine(bundles[i] as string);
-                bundleFiles[i] = fullPath + bundles[i];
-            }
-            Debug.Log(sb.ToString());
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("AssetBundles:");
+        int len = bundles.Count / 2;
+        for (int i = 0; i < len; i+=2) {
+            sb.AppendLine(bundles[i] as string);
+            bundleFiles[i] = fullPath + bundles[i];
+            bundleFiles[i+1] = fullPath + bundles[i] + ".manifest";
         }
+        Debug.Log(sb.ToString());
 
-//        string pathAssetBundles = Application.streamingAssetsPath + "/";
-//
-//        string[] files = Directory.GetFiles(Directory.GetCurrentDirectory() + "/" + path);
-//        {
-//            StringBuilder sb = new StringBuilder();
-//            sb.AppendLine("Files in " + path + ":");
-//            foreach (string file in files) {
-//                sb.AppendLine(file);
-//            }
-//            Debug.Log(sb.ToString());
-//        }
-
-//        string pathManifest = pathAssetBundles + "iOS";
-//
-//        Debug.Log("Upload asset bundles from "+pathAssetBundles);
-//        Debug.Log("Load manifest from "+pathManifest);
-//
-//        AssetBundle bundle = AssetBundle.LoadFromFile(pathManifest);
-//
-//        if (bundle == null) {
-//            Debug.LogError("Could not load manifest");
-//            return;
-//        }
-//        
-//        Debug.Log("Loaded manifest bundle");
-//        
-//        AssetBundleManifest manifest = bundle.LoadAsset<AssetBundleManifest>("AssetBundleManifest");
-//
-//        if (manifest == null) {
-//            Debug.LogError("Could not find manifest in bundle");
-//            return;
-//        }
-//        
-//        Debug.Log("Got manifest "+manifest.name);
-//        
-//        string[] bundles = manifest.GetAllAssetBundles();
-//        string[] bundleFiles = new string[bundles.Length];
-//
-//        for (int i = 0; i < bundles.Length; ++i) {
-//            bundleFiles[i] = pathAssetBundles + bundles[i];
-//            Debug.Log("Add "+bundleFiles[i]+" to upload queue");
-//        }
-//
         Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
         string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
         Debug.Log("Response: " + response);
