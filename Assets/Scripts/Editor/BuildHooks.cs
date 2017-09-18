@@ -7,7 +7,6 @@ using System.IO;
 using System.Net;
 using System.Text;
 using UnityEngine.CloudBuild;
-using MiniJSON;
 
 #if (!UNITY_CLOUD_BUILD)
 namespace UnityEngine.CloudBuild {
@@ -78,7 +77,7 @@ public class BuildHooks {
         {
             Debug.Log("Got manifest from json");
         
-            var manifestDict = Json.Deserialize(manifest.text) as Dictionary<string,object>;
+            var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
 
             if (manifestDict == null) {
                 Debug.Log("Could not deserialize manifest json");
@@ -120,7 +119,7 @@ public class BuildHooks {
         {
             Debug.Log("Got manifest from json");
         
-            var manifestDict = Json.Deserialize(manifest.text) as Dictionary<string,object>;
+            var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
 
             if (manifestDict == null) {
                 Debug.Log("Could not deserialize manifest json");
