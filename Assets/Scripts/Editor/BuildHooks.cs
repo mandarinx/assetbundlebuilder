@@ -7,6 +7,12 @@ using System.Net;
 using System.Text;
 
 [Serializable]
+public class CBManifestBundles {
+    public string[] localBundles;
+    public string localBundlesRelativePath;
+}
+
+[Serializable]
 public class CBManifest {
     public string scmCommitId;
     public string scmBranch;
@@ -17,8 +23,7 @@ public class CBManifest {
     public string unityVersion;
     public string xcodeVersion;
     public string cloudBuildTargetName;
-    public string[] localBundles;
-    public string localBundlesRelativePath;
+    public CBManifestBundles assetBundles;
 }
 
 public class BuildHooks {
@@ -40,16 +45,20 @@ public class BuildHooks {
             CBManifest data = JsonUtility.FromJson<CBManifest>(manifest.text);
             Debug.Log("Deserialized manifest is OK");
 
-            if (data.localBundles == null) {
-                Debug.Log("data.localBundles == null");
+            if (data.assetBundles == null) {
+                Debug.Log("data.assetBundles == null");
             } else {
-                Debug.Log("Manifest localBundles.Length: " + data.localBundles.Length);
-                for (int i = 0; i < data.localBundles.Length; ++i) {
-                    Debug.Log("    ["+i+"] "+data.localBundles[i]);
+                if (data.assetBundles.localBundles == null) {
+                    Debug.Log("data.assetBundles.localBundles == null");
+                } else {
+                    Debug.Log("Manifest localBundles.Length: " + data.assetBundles.localBundles.Length);
+                    for (int i = 0; i < data.assetBundles.localBundles.Length; ++i) {
+                        Debug.Log("    ["+i+"] "+data.assetBundles.localBundles[i]);
+                    }
                 }
+                
+                Debug.Log("data.assetBundles.localBundlesRelativePath: "+data.assetBundles.localBundlesRelativePath);
             }
-
-            Debug.Log("data.localBundlesRelativePath: "+data.localBundlesRelativePath);
         }
         
         string pathAssetBundles = Application.streamingAssetsPath + "/";
