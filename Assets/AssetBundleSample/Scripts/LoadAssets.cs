@@ -1,7 +1,12 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 using Utility = AssetBundles.Utility;
+
+// Should be able to specify a transport type override for each platform.
+// Editor defaults to loading from file. Should easily be overridden by
+// custom data to e.g. load from web.
 
 public static class ABHelper {
 
@@ -22,8 +27,9 @@ public static class ABHelper {
         switch (Application.platform) {
             case RuntimePlatform.OSXEditor:
                 return Application.dataPath.Replace("Assets", "") + cfg.bundlesFolder + "/" + platform + "/";
-            default:
+
             case RuntimePlatform.IPhonePlayer:
+            default:
                 return cfg.remoteURL;
         }
     }
@@ -34,7 +40,19 @@ public class LoadAssets : MonoBehaviour {
     public string assetBundleName;
     public string assetName;
 
-    IEnumerator Start() {
+    public Button btn;
+    public Text txt;
+
+    private void Start() {
+        btn.onClick.AddListener(OnClick);
+        txt.text = "";
+    }
+
+    private void OnClick() {
+        StartCoroutine(Load());
+    }
+
+    IEnumerator Load() {
         DontDestroyOnLoad(gameObject);
 
         Config cfg = new Config {
@@ -46,6 +64,9 @@ public class LoadAssets : MonoBehaviour {
         
         string path = ABHelper.GetPath(cfg.abConfig, Utility.GetPlatformName()) + assetBundleName;
 
+        txt.text += "Path: " + path + "\n";
+        txt.text += "Platform: " + Application.platform + "\n";
+        
 // >> LOAD MANIFEST        
 //        string pathManifest = pathAssetBundles + "iOS";
 //        
@@ -62,15 +83,18 @@ public class LoadAssets : MonoBehaviour {
                 job = new AssetBundleLoadFromFile();
                 break;
                 
-            default:
             case RuntimePlatform.IPhonePlayer:
+            default:
                 job = new AssetBundleLoadFromWeb();
                 break;
         }
+
+        txt.text += "Job: " + job.GetType() + "\n";
         
         yield return job.Load(path);
 
         if (job.error) {
+            txt.text += "Error: " + job.errorMessage + "\n";
             Debug.LogWarning(job.errorMessage);
             yield break;
         }
@@ -97,12 +121,13 @@ public class AssetBundleLoadFromFile : IAssetBundleJob {
         AssetBundleCreateRequest req = AssetBundle.LoadFromFileAsync(path);
         yield return req;
 
-        bundle = req.assetBundle;
-        
-        if (bundle == null) {
+        if (req.assetBundle == null) {
             error = true;
             errorMessage = "Could not load asset bundle from "+path;
+            yield break;
         }
+        
+        bundle = req.assetBundle;
     }
 }
 
@@ -120,7 +145,7 @@ public class AssetBundleLoadFromWeb : IAssetBundleJob {
             errorMessage = www.error;
             yield break;
         }
-                
+
         bundle = DownloadHandlerAssetBundle.GetContent(www);
     }
 }
