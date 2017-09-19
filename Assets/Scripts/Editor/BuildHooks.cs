@@ -5,45 +5,125 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Net;
 using System.Text;
+using UnityEditor;
+using UnityEngine.CloudBuild;
+
+#if (!UNITY_CLOUD_BUILD)
+namespace UnityEngine.CloudBuild {
+    public class BuildManifestObject : ScriptableObject {
+
+        // Tries to get a manifest value - returns true if key was found and
+        // could be cast to type T, false otherwise.
+        public bool TryGetValue<T>(string key, out T result) {
+            result = default(T);
+            return true;
+        }
+
+        // Retrieve a manifest value or throw an exception if the given key
+        // isn't found.
+        public T GetValue<T>(string key) { return default(T); }
+
+        // Sets the value for a given key.
+        public void SetValue(string key, object value) {}
+
+        // Copy values from a dictionary. ToString() will be called on
+        // dictionary values before being stored.
+        public void SetValues(Dictionary<string, object> sourceDict) {}
+
+        // Remove all key/value pairs
+        public void ClearValues() {}
+
+        // Returns a Dictionary that represents the current BuildManifestObject
+        public Dictionary<string, object> ToDictionary() { return null; }
+
+        // Returns a JSON formatted string that represents the current
+        // BuildManifestObject
+        public string ToJson() { return ""; }
+
+        // Returns an INI formatted string that represents the current
+        // BuildManifestObject
+        public override string ToString() { return ""; }
+    }
+}
+#endif
 
 public class BuildHooks {
 
-    public static void PreBuild() {
+    public static void PreBuildiOSPVRTC(BuildManifestObject manifest) {
+        Debug.Log("PreBuild iOS PVRTC");
+//        MobileTextureSubtarget subtarget = MobileTextureSubtarget.PVRTC;
+//        int prefix = GetBuildPrefix(subtarget);
+        string buildNumber = manifest.GetValue<string>("buildNumber");
+        Debug.Log("Build number: "+buildNumber);
+//        SetBundleVersion(buildNumber, prefix);
+//        SetAndroidBuildSubtarget(subtarget);
+        SetVersion(buildNumber);
     }
 
     public static void PostBuild(string builtProjectPath) {
         Debug.Log("BuildHooks.PostBuild builtProjectPath: "+builtProjectPath);
 
-        var manifest = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
+        TextAsset json = (TextAsset) Resources.Load("UnityCloudBuildManifest.json");
         Debug.Log("[PostBuild] Load manifest from json");
-        if (manifest == null) {
+        if (json == null) {
             Debug.LogWarning("Couldn't get manifest from json");
             return;
         }
 
-        Debug.Log("Got manifest from json");
+        Debug.Log("Got json from json");
         
-        var manifestDict = MiniJSON.Json.Deserialize(manifest.text) as Dictionary<string,object>;
+        Dictionary<string, object> manifest = MiniJSON.Json.Deserialize(json.text) as Dictionary<string,object>;
 
-        if (manifestDict == null) {
+        if (manifest == null) {
             Debug.Log("Could not deserialize manifest json");
             return;
         }
         
         StringBuilder sb = new StringBuilder();
         sb.AppendLine("Manifest contents:");
-        foreach (var kvp in manifestDict) {
+        foreach (var kvp in manifest) {
             var value = (kvp.Value != null) ? kvp.Value.ToString() : "";
             sb.AppendLine(string.Format("Key: {0}, Value: {1}", kvp.Key, value));
         }
         Debug.Log(sb.ToString());
 
-        string bundlesPath = manifestDict["assetBundles.localBundlesRelativePath"] as string;
-        List<object> bundles = manifestDict["assetBundles.localBundles"] as List<object>;
+        string bundlesPath = manifest["assetBundles.localBundlesRelativePath"] as string;
+        List<object> bundles = manifest["assetBundles.localBundles"] as List<object>;
 
         UploadAssetBundles(bundles, bundlesPath);
     }
 
+    private static int GetBuildPrefix(MobileTextureSubtarget texture) {
+        switch ((int) texture) {
+            case 0: // Generic. Not in use
+                return 0;
+            case 1: // DXT
+                return 40010;
+            case 2: // PVRTC
+                return 50010;
+            case 3: // ATC
+                return 30010;
+            case 4: // ETC
+                return 10010;
+            case 5: // ETC2
+                return 20010;
+            default: // ASTC
+                return 60010;
+        }
+    }
+    
+    private static void SetBundleVersion(string buildNumber, int prefix) {
+        PlayerSettings.Android.bundleVersionCode = (prefix * 100) + int.Parse(buildNumber);
+    }
+    
+    private static void SetAndroidBuildSubtarget(MobileTextureSubtarget texture) {
+        EditorUserBuildSettings.androidBuildSubtarget = texture;
+    }
+
+    private static void SetVersion(string version) {
+        PlayerSettings.bundleVersion = version;
+    }
+    
     public static void UploadAssetBundles(List<object> bundles, string path) {
         Debug.Log("BuildHooks.UploadAssetBundles from "+path);
         

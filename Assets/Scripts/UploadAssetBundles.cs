@@ -9,8 +9,6 @@ using System.Text;
 public class UploadAssetBundles : MonoBehaviour {
 
     public void Upload() {
-        Debug.Log("UploadAssetBundles starting upload");
-
         string pathAssetBundles = Application.dataPath.Replace("Assets", "") + "AssetBundles/iOS/";
         string pathManifest = pathAssetBundles + "iOS";
 
@@ -33,10 +31,7 @@ public class UploadAssetBundles : MonoBehaviour {
 
         Debug.Log("Upload bundles to https://buildhook-mndr.herokuapp.com/upload/");
         string response = UploadFiles("https://buildhook-mndr.herokuapp.com/upload/", bundleFiles);
-        Debug.Log(response);
-
-        // ODR setting has been fixed. Test it by loading a bundle. It should be loaded from file, and not ODR.
-
+        Debug.Log("Response: " + response);
     }
     
     ///<summary>Uploads form fields, and n files to REST endpoint</summary>
